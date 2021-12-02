@@ -3,20 +3,27 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const {SERVER_PORT} = process.env
-const {seed, getCountries, getCities, createCity, deleteCity} = require('./controller.js')
+const {
+    getAllClients,
+    getPendingAppointments,
+    getUpcomingAppointments,
+    getPastAppointments, 
+    approveAppointment, 
+    completeAppointment, 
+    deleteAppointment
+} = require('./controller.js')
 
 app.use(express.json())
 app.use(cors())
 
-// DEV
-app.post('/seed', seed)
+// USERS
+ app.get('/clients', getAllClients)
 
-// COUNTRIES
-// app.get('/countries', getCountries)
-
-// CITIES
-// app.post('/cities', createCity)
-// app.get('/cities', getCities)
-// app.delete('/cities/:id', deleteCity)
+// APPOINTMENTS
+ app.get('/pending', getPendingAppointments)
+ app.get('/upcoming', getUpcomingAppointments)
+ app.get('/appt', getPastAppointments)
+// app.put('/approve', approveAppointment)
+// app.put('/complete', completeAppointment)
 
 app.listen(SERVER_PORT, () => console.log(`up on ${SERVER_PORT}`))
