@@ -1,217 +1,75 @@
+require('dotenv').config();
+process.env.CONNECTION_STRING
+const {CONNECTION_STRING} = process.env;
+const Sequelize = require('sequelize');
 
+const sequelize = new Sequelize(CONNECTION_STRING, {
+    dialect: 'postgres',
+    dialectOptions: {
+        ssl: {
+            rejectUnauthorized: false
+        }
+    }
+  })
+
+let nextEmp = 5
 
 module.exports = {
-    seed: (req, res) => {
-        sequelize.query(`
-            drop table if exists cities;
-            drop table if exists countries;
 
-            create table countries (
-                country_id serial primary key, 
-                name varchar
-            );
 
-            *****YOUR CODE HERE*****
+    getAllClients: (req, res) => {
+        sequelize.query(`select * from cc_clients c
+        join cc_users u on c.user_id = u.user_id;`)
+            .then(dbRes => res.status(200).send(dbRes[0]))
+            .catch(err => console.log(err))
+    }, 
 
-            insert into countries (name)
-            values ('Afghanistan'),
-            ('Albania'),
-            ('Algeria'),
-            ('Andorra'),
-            ('Angola'),
-            ('Antigua and Barbuda'),
-            ('Argentina'),
-            ('Armenia'),
-            ('Australia'),
-            ('Austria'),
-            ('Azerbaijan'),
-            ('Bahamas'),
-            ('Bahrain'),
-            ('Bangladesh'),
-            ('Barbados'),
-            ('Belarus'),
-            ('Belgium'),
-            ('Belize'),
-            ('Benin'),
-            ('Bhutan'),
-            ('Bolivia'),
-            ('Bosnia and Herzegovina'),
-            ('Botswana'),
-            ('Brazil'),
-            ('Brunei'),
-            ('Bulgaria'),
-            ('Burkina Faso'),
-            ('Burundi'),
-            ('Côte d''Ivoire'),
-            ('Cabo Verde'),
-            ('Cambodia'),
-            ('Cameroon'),
-            ('Canada'),
-            ('Central African Republic'),
-            ('Chad'),
-            ('Chile'),
-            ('China'),
-            ('Colombia'),
-            ('Comoros'),
-            ('Congo'),
-            ('Costa Rica'),
-            ('Croatia'),
-            ('Cuba'),
-            ('Cyprus'),
-            ('Czech Republic'),
-            ('Democratic Republic of the Congo'),
-            ('Denmark'),
-            ('Djibouti'),
-            ('Dominica'),
-            ('Dominican Republic'),
-            ('Ecuador'),
-            ('Egypt'),
-            ('El Salvador'),
-            ('Equatorial Guinea'),
-            ('Eritrea'),
-            ('Estonia'),
-            ('Eswatini'),
-            ('Ethiopia'),
-            ('Fiji'),
-            ('Finland'),
-            ('France'),
-            ('Gabon'),
-            ('Gambia'),
-            ('Georgia'),
-            ('Germany'),
-            ('Ghana'),
-            ('Greece'),
-            ('Grenada'),
-            ('Guatemala'),
-            ('Guinea'),
-            ('Guinea-Bissau'),
-            ('Guyana'),
-            ('Haiti'),
-            ('Holy See'),
-            ('Honduras'),
-            ('Hungary'),
-            ('Iceland'),
-            ('India'),
-            ('Indonesia'),
-            ('Iran'),
-            ('Iraq'),
-            ('Ireland'),
-            ('Israel'),
-            ('Italy'),
-            ('Jamaica'),
-            ('Japan'),
-            ('Jordan'),
-            ('Kazakhstan'),
-            ('Kenya'),
-            ('Kiribati'),
-            ('Kuwait'),
-            ('Kyrgyzstan'),
-            ('Laos'),
-            ('Latvia'),
-            ('Lebanon'),
-            ('Lesotho'),
-            ('Liberia'),
-            ('Libya'),
-            ('Liechtenstein'),
-            ('Lithuania'),
-            ('Luxembourg'),
-            ('Madagascar'),
-            ('Malawi'),
-            ('Malaysia'),
-            ('Maldives'),
-            ('Mali'),
-            ('Malta'),
-            ('Marshall Islands'),
-            ('Mauritania'),
-            ('Mauritius'),
-            ('Mexico'),
-            ('Micronesia'),
-            ('Moldova'),
-            ('Monaco'),
-            ('Mongolia'),
-            ('Montenegro'),
-            ('Morocco'),
-            ('Mozambique'),
-            ('Myanmar'),
-            ('Namibia'),
-            ('Nauru'),
-            ('Nepal'),
-            ('Netherlands'),
-            ('New Zealand'),
-            ('Nicaragua'),
-            ('Niger'),
-            ('Nigeria'),
-            ('North Korea'),
-            ('North Macedonia'),
-            ('Norway'),
-            ('Oman'),
-            ('Pakistan'),
-            ('Palau'),
-            ('Palestine State'),
-            ('Panama'),
-            ('Papua New Guinea'),
-            ('Paraguay'),
-            ('Peru'),
-            ('Philippines'),
-            ('Poland'),
-            ('Portugal'),
-            ('Qatar'),
-            ('Romania'),
-            ('Russia'),
-            ('Rwanda'),
-            ('Saint Kitts and Nevis'),
-            ('Saint Lucia'),
-            ('Saint Vincent and the Grenadines'),
-            ('Samoa'),
-            ('San Marino'),
-            ('Sao Tome and Principe'),
-            ('Saudi Arabia'),
-            ('Senegal'),
-            ('Serbia'),
-            ('Seychelles'),
-            ('Sierra Leone'),
-            ('Singapore'),
-            ('Slovakia'),
-            ('Slovenia'),
-            ('Solomon Islands'),
-            ('Somalia'),
-            ('South Africa'),
-            ('South Korea'),
-            ('South Sudan'),
-            ('Spain'),
-            ('Sri Lanka'),
-            ('Sudan'),
-            ('Suriname'),
-            ('Sweden'),
-            ('Switzerland'),
-            ('Syria'),
-            ('Tajikistan'),
-            ('Tanzania'),
-            ('Thailand'),
-            ('Timor-Leste'),
-            ('Togo'),
-            ('Tonga'),
-            ('Trinidad and Tobago'),
-            ('Tunisia'),
-            ('Turkey'),
-            ('Turkmenistan'),
-            ('Tuvalu'),
-            ('Uganda'),
-            ('Ukraine'),
-            ('United Arab Emirates'),
-            ('United Kingdom'),
-            ('United States of America'),
-            ('Uruguay'),
-            ('Uzbekistan'),
-            ('Vanuatu'),
-            ('Venezuela'),
-            ('Vietnam'),
-            ('Yemen'),
-            ('Zambia'),
-            ('Zimbabwe');
-        `).then(() => {
-            console.log('DB seeded!')
-            res.sendStatus(200)
-        }).catch(err => console.log('error seeding DB', err))
+
+    getPendingAppointments: (req, res) => {
+        sequelize.query(`select * from cc_appointments
+        where approved = false
+        order by date desc;`)
+            .then(dbRes => res.status(200).send(dbRes[0]))
+            .catch(err => console.log(err))
+    }, 
+
+    getPastAppointments: (req, res) => {
+        sequelize.query(`select a.appt_id, a.date, a.service_type, a.notes, u.first_name, u.last_name 
+        from cc_appointments a
+        join cc_emp_appts ea on a.appt_id = ea.appt_id
+        join cc_employees e on e.emp_id = ea.emp_id
+        join cc_users u on e.user_id = u.user_id
+        where a.approved = true and a.completed = true
+        order by a.date desc;`)
+            .then(dbRes => res.status(200).send(dbRes[0]))
+            .catch(err => console.log(err))
+    }, 
+
+    getUpcomingAppointments: (req, res) => {
+        sequelize.query(`select a.appt_id, a.date, a.service_type, a.approved, a.completed, u.first_name, u.last_name 
+        from cc_appointments a
+        join cc_emp_appts ea on a.appt_id = ea.appt_id
+        join cc_employees e on e.emp_id = ea.emp_id
+        join cc_users u on e.user_id = u.user_id
+        where a.approved = true and a.completed = false
+        order by a.date desc;`)
+            .then(dbRes => res.status(200).send(dbRes[0]))
+            .catch(err => console.log(err))
+    },
+
+    approveAppointment: (req, res) => {
+        let {apptId} = req.body
+    
+        sequelize.query(`*****YOUR CODE HERE*****
+        
+        insert into cc_emp_appts (emp_id, appt_id)
+        values (${nextEmp}, ${apptId}),
+        (${nextEmp + 1}, ${apptId});
+        `)
+            .then(dbRes => {
+                res.status(200).send(dbRes[0])
+                nextEmp += 2
+            })
+            .catch(err => console.log(err))
     }
 }
