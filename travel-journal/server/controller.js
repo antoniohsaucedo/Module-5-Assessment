@@ -10,9 +10,31 @@ const sequelize = new Sequelize(CONNECTION_STRING, {
             rejectUnauthorized: false
         }
     }
-  })
+  }) 
 
 module.exports = {
+
+    getCountries: (req, res) => {
+        sequelize.query(`select * from countries c`)
+            .then(dbRes => res.status(200).send(dbRes[0]))
+            .catch(err => console.log(err))
+    }, 
+
+    createCity: (req, res) => {
+        let {apptId} = req.body
+    
+        sequelize.query(`
+        insert into cities (name, rating, countryId)
+        values (${name}, ${rating}, ${countryId});
+        `)
+
+        
+    .then(dbRes => {
+                res.status(200).send(dbRes[0])
+            })
+            .catch(err => console.log(err))
+    },
+
     seed: (req, res) => {
         sequelize.query(`
             drop table if exists cities;
@@ -24,11 +46,14 @@ module.exports = {
             );
                   create table cities (
                   city_id serial, primary key,
-                  name varchar(100),
+                  name varchar,
                     rating integer,
                     country_id integer
                 );
           
+                
+                
+
 
             insert into countries (name)
             values ('Afghanistan'),
